@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mess Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #007bff;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .add-btn {
+            background-color: #28a745;
+            color: white;
+        }
+        .add-btn:hover {
+            background-color: #218838;
+        }
+        .update-btn {
+            background-color: #ffc107;
+            color: white;
+        }
+        .update-btn:hover {
+            background-color: #e0a800;
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        .popup input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .popup button {
+            padding: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Mess Management</h2>
+        <button class="add-btn" onclick="location.href='messform.html'">Add Mess</button>
+        <button class="update-btn" onclick="showUpdatePopup()">Update Mess</button>
+    </div>
+
+    <div class="popup" id="updatePopup">
+        <h3>Enter Mess Name</h3>
+        <input type="text" id="messNameInput" placeholder="Mess Name">
+        <button onclick="searchMess()">Search</button>
+        <button onclick="closePopup()">Cancel</button>
+    </div>
+
+    <script>
+        function showUpdatePopup() {
+            document.getElementById("updatePopup").style.display = "block";
+        }
+    
+        function closePopup() {
+            document.getElementById("updatePopup").style.display = "none";
+        }
+    
+        async function searchMess() {
+    const messName = document.getElementById("messNameInput").value.trim();
+
+    if (!messName) {
+        alert("Please enter a mess name");
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:3019/messprofiles?name=${encodeURIComponent(messName)}`);
+
+        if (!response.ok) {
+            throw new Error("Mess not found");
+        }
+
+        const messData = await response.json();
+        
+        console.log("Fetched mess data:", messData); // Debugging log
+
+        // Check if messData is valid before storing it
+        if (!messData || (Array.isArray(messData) && messData.length === 0) || (typeof messData === 'object' && Object.keys(messData).length === 0)) {
+            alert("Mess not found. Please check the name.");
+            return;
+        }
+
+        // If the response is an array, use the first item; otherwise, use the object
+        const dataToStore = Array.isArray(messData) ? messData[0] : messData;
+
+        // Store the valid mess data in localStorage
+        localStorage.setItem("messData", JSON.stringify(dataToStore));
+        console.log("Data stored in localStorage:", localStorage.getItem("messData"));
+
+        closePopup();
+        window.location.href = "messform.html"; // Redirect to form page
+
+    } catch (error) {
+        alert("Mess not found. Please check the name.");
+        console.error(error); // Log error for debugging
+    }
+}
+
+
+
+    </script>
+</body>
+</html>
